@@ -45,6 +45,14 @@
             border-radius: 4px;
         }
 
+        input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
         input[type="submit"] {
             background-color: #4CAF50;
             color: white;
@@ -60,13 +68,33 @@
     </style>
 </head>
 <body>
+<script>
+    function bevestigVerwijderen() {
+        return confirm("Weet u zeker dat u wilt verwijderen?");
+    }
+</script>
     <h1>Administrator platform</h1>
     <h2>Mensen</h2>
+    <form action="/filteren" method="post">
+        <label for="locatieFilter">Filter op locatie:</label>
+        <select name="locatieFilter" id="locatieFilter">
+            <option value="">Alle</option>
+            <option value="Brugge">Brugge</option>
+            <option value="Oudenaarde">Oudenaarde</option>
+            <option value="Lokeren">Lokeren</option>
+            <option value="Erembodegem">Erembodegem</option>
+            <option value="Mechelen">Mechelen</option>
+            <option value="Niet Toegewezen">Niet Toegewezen</option>
+        </select>
+        <input type="submit" value="Filteren">
+    </form>
+    <br>
     <table>
         <tr>
             <th>Voornaam</th>
             <th>Achternaam</th>
             <th>Locatie</th>
+            <th>Geboortedatum</th>
             <th></th>
         </tr>
         {% for persoon in mensen %}
@@ -74,11 +102,13 @@
             <td>{{ persoon[0] }}</td>
             <td>{{ persoon[1] }}</td>
             <td>{{ persoon[2] }}</td>
+            <td>{{ persoon[3] }}</td>
             <td>
-                <form action="/verwijderen" method="post" style="display: inline;">
+                <form action="/verwijderen" method="post" style="display: inline;" onsubmit="return bevestigVerwijderen();">
                     <input type="hidden" name="voornaam" value="{{ persoon[0] }}">
                     <input type="hidden" name="achternaam" value="{{ persoon[1] }}">
-					<input type="hidden" name="locatie" value="{{ persoon[2] }}">
+                    <input type="hidden" name="locatie" value="{{ persoon[2] }}">
+                    <input type="hidden" name="geboortedatum" value="{{ persoon[3] }}">
                     <input type="submit" value="Verwijderen">
                 </form>
             </td>
@@ -100,7 +130,12 @@
             <option value="Oudenaarde">Oudenaarde</option>
             <option value="Lokeren">Lokeren</option>
             <option value="Erembodegem">Erembodegem</option>
+            <option value="Mechelen">Mechelen</option>
+            <option value="Niet Toegewezen">Niet Toegewezen</option>
         </select>
+
+        <label for="geboortedatum">Geboortedatum:</label>
+        <input type="date" name="geboortedatum" id="geboortedatum" required>
 
         <input type="submit" value="Toevoegen">
     </form>

@@ -40,7 +40,7 @@ def haal_mensen_op():
     conn = sqlite3.connect('techmensenba.db')
     cursor = conn.cursor()
 
-    cursor.execute("SELECT voornaam, achternaam, locatie FROM mensen")
+    cursor.execute("SELECT voornaam, achternaam, locatie, geboortedatum FROM mensen")
     resultaten = cursor.fetchall()
 
     conn.close()
@@ -48,23 +48,23 @@ def haal_mensen_op():
     return resultaten
 
 # Functie om een persoon aan de database toe te voegen
-def voeg_persoon_toe(voornaam, achternaam, locatie):
+def voeg_persoon_toe(voornaam, achternaam, locatie, geboortedatum):
     conn = sqlite3.connect('techmensenba.db')
     cursor = conn.cursor()
 
-    cursor.execute("INSERT INTO mensen (voornaam, achternaam, locatie) VALUES (?, ?, ?)", (voornaam, achternaam, locatie))
+    cursor.execute("INSERT INTO mensen (voornaam, achternaam, locatie, geboortedatum) VALUES (?, ?, ?, ?)", (voornaam, achternaam, locatie, geboortedatum))
 
     conn.commit()
     conn.close()
 
 # Functie om een persoon uit de database te verwijderen
-def verwijder_persoon(voornaam, achternaam, locatie):
+def verwijder_persoon(voornaam, achternaam, locatie, geboortedatum):
     conn = sqlite3.connect('techmensenba.db')
     cursor = conn.cursor()
     
-    print(f"Te verwijderen persoon: {voornaam}, {achternaam}, {locatie}")
+    print(f"Te verwijderen persoon: {voornaam}, {achternaam}, {locatie}, {geboortedatum}")
 
-    cursor.execute("DELETE FROM mensen WHERE voornaam=? AND achternaam=? AND locatie=?", (voornaam, achternaam, locatie))
+    cursor.execute("DELETE FROM mensen WHERE voornaam=? AND achternaam=? AND locatie=? AND geboortedatum=?", (voornaam, achternaam, locatie, geboortedatum))
 
     conn.commit()
     conn.close()
@@ -79,10 +79,11 @@ def toevoegen():
     voornaam = request.form['voornaam']
     achternaam = request.form['achternaam']
     locatie = request.form['locatie']
+    geboortedatum = request.form['geboortedatum']
     
-    print(f"Ontvangen gegevens voor verwijderen: {voornaam}, {achternaam}, {locatie}")
+    print(f"Ontvangen gegevens voor verwijderen: {voornaam}, {achternaam}, {locatie}, {geboortedatum}")
 
-    voeg_persoon_toe(voornaam, achternaam, locatie)
+    voeg_persoon_toe(voornaam, achternaam, locatie, geboortedatum)
 
     return redirect('/techmensen')
 
@@ -91,13 +92,29 @@ def verwijderen():
     voornaam = request.form['voornaam']
     achternaam = request.form['achternaam']
     locatie = request.form['locatie']
+    geboortedatum = request.form ['geboortedatum']
 
-    verwijder_persoon(voornaam, achternaam, locatie)
+    verwijder_persoon(voornaam, achternaam, locatie, geboortedatum)
 
     return redirect('/techmensen')
 #####
 #####
 ##### nieuwe code einde ###
+@app.route('/filteren', methods=['POST'])
+def filteren():
+    locatie_filter = request.form.get('locatieFilter')
+
+    mensen = haal_mensen_op()  # Haal de lijst met mensen op
+
+    gefilterde_mensen = []
+
+    for persoon in mensen:
+        if locatie_filter == '' or persoon[2] == locatie_filter:
+            gefilterde_mensen.append(persoon)
+
+    return render_template('techmensen.html', mensen=gefilterde_mensen)
+
+
 
 if __name__ == "__main__":
     app.run()
