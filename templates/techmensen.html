@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mensenbeheer</title>
+</head>
+<body>
+    <h1>Mensen</h1>
+    <ul>
+        {% for persoon in mensen %}
+        <li>{{ persoon[0] }} {{ persoon[1] }}
+            <form action="/verwijderen" method="post" style="display: inline;">
+                <input type="hidden" name="voornaam" value="{{ persoon[0] }}">
+                <input type="hidden" name="achternaam" value="{{ persoon[1] }}">
+                <input type="submit" value="Verwijderen">
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Persoon toevoegen</h2>
+    <form action="/toevoegen" method="post">
+        <label for="voornaam">Voornaam:</label>
+        <input type="text" name="voornaam" id="voornaam" required><br>
+
+        <label for="achternaam">Achternaam:</label>
+        <input type="text" name="achternaam" id="achternaam" required><br>
+
+        <input type="submit" value="Toevoegen">
+    </form>
+</body>
+</html>
