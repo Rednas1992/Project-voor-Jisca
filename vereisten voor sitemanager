@@ -1,0 +1,11 @@
+het moet mogelijk zijn om alle techniekers te kunnen zien
+
+techniekers van eigen site moet je een status kunnen geven
+die status kan zijn 
+1. actief ( aanwezig op werkplaats)
+2. ziek (ziek)
+3. verlof ( toegestaan verlof)
+4. Varia (status technieker onbekend)
+5. Vrij ( er zijn geen projecten voor deze technieker )
+
+technieker van jouw planning/site kunnen afhalen ( site veranderen naar niet toegewezen)

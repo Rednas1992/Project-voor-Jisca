@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Oudenaarde</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 30px;
+        }
+
+        form {
+            width: 300px;
+            margin: 20px auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+		
+		.toggle-button {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .toggle-button::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 2px;
+            background-color: #fff;
+        }
+		
+		.not-planning {
+    color: orange;
+  }
+		
+    </style>
+	<script>
+        function toggleSection(sectionId) {
+            var section = document.getElementById(sectionId);
+            section.style.display = (section.style.display === 'none') ? 'block' : 'none';
+        }
+
+        function updateStatus(selectElement) {
+            var locatieFilter = document.getElementById("locatieFilter").value;
+            var statusElement = selectElement;
+
+            if (locatieFilter !== "Oudenaarde") {
+                var tableRow = statusElement.parentNode.parentNode;
+                tableRow.parentNode.removeChild(tableRow);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Oudenaarde Vertrek</h1>
+	
+	<div>
+        <h2 style="display: inline;">Mensen</h2>
+        <div class="toggle-button" onclick="toggleSection('mensenSection')"></div>
+    </div>
+	
+	<div id="mensenSection">
+    <form action="/filteren_oudenaarde" method="post">
+        <label for="locatieFilter">Filter op locatie:</label>
+        <select name="locatieFilter" id="locatieFilter">
+            <option value="">Alle</option>
+            <option value="Brugge">Brugge</option>
+            <option value="Oudenaarde" selected>Oudenaarde</option>
+            <option value="Lokeren">Lokeren</option>
+            <option value="Erembodegem">Erembodegem</option>
+            <option value="Mechelen">Mechelen</option>
+            <option value="Niet Toegewezen">Niet Toegewezen</option>
+        </select>
+        <input type="submit" value="Filteren">
+    </form>
+    <br>
+    <table>
+        <tr>
+            <th>Voornaam</th>
+            <th>Achternaam</th>
+            <th>Locatie</th>
+            <th>Geboortedatum</th>
+            <th>Status</th>
+            <th>Opmerkingen</th>
+        </tr>
+        {% for persoon in mensen %}
+        <tr>
+            <td>{{ persoon[0] }}</td>
+            <td>{{ persoon[1] }}</td>
+            <td>{{ persoon[2] }}</td>
+            <td>{{ persoon[3] }}</td>
+            <td>
+                {% if persoon[2] == "Oudenaarde" %}
+                    <select name="status_{{ loop.index0 }}" onchange="updateStatus(this)">
+                        <option value="" disabled selected>Selecteer status</option>
+                        <option value="Actief">Actief</option>
+                        <option value="Ziek">Ziek</option>
+                        <option value="Verlof">Verlof</option>
+                        <option value="Varia">Varia</option>
+                        <option value="Vrij">Vrij</option>
+                    </select>
+                {% else %}
+                    <span class="not-planning">Niet van jouw planning</span>
+                {% endif %}
+            </td>
+            <td><input type="text" name="opmerkingen_{{ loop.index0 }}" placeholder="Opmerkingen"></td>
+        </tr>
+        {% endfor %}
+    </table>
+	<form id="vertrekForm" action="/vertrek_doorgestuurd_oudenaarde" method="post">
+    <input type="submit" value="Vertrek doorsturen/updaten" id="vertrekButton">
+</form>
+	</div>
+
+    <div>
+        <h2 style="display: inline;">Persoon toevoegen</h2>
+        <div class="toggle-button" onclick="toggleSection('toevoegenSection')"></div>
+    </div>
+	<div id="toevoegenSection">
+    <form action="/toevoegen_oudenaarde" method="post">
+        <label for="voornaam">Voornaam:</label>
+        <input type="text" name="voornaam" id="voornaam" required>
+
+        <label for="achternaam">Achternaam:</label>
+        <input type="text" name="achternaam" id="achternaam" required>
+
+        <label for="locatie">Locatie:</label>
+        <select name="locatie" id="locatie" required>
+            <option value="Oudenaarde">Oudenaarde</option>
+            <option value="Niet Toegewezen">Niet Toegewezen</option>
+        </select>
+
+        <label for="geboortedatum">Geboortedatum:</label>
+        <input type="date" name="geboortedatum" id="geboortedatum" required>
+
+        <input type="submit" value="Toevoegen">
+    </form>
+	</div>
+	
+	<div>
+        <h2 style="display: inline;">Persoon van eigen planning verwijderen</h2>
+        <div class="toggle-button" onclick="toggleSection('verwijderensection')"></div>
+    </div>
+	<div id="verwijderensection">
+    <form action="/toevoegen_oudenaarde" method="post">
+        <label for="voornaam">Voornaam:</label>
+        <input type="text" name="voornaam" id="voornaam" required>
+
+        <label for="achternaam">Achternaam:</label>
+        <input type="text" name="achternaam" id="achternaam" required>
+
+        <label for="locatie">Locatie:</label>
+        <select name="locatie" id="locatie" required>
+            <option value="Oudenaarde">Oudenaarde</option>
+            <option value="Niet Toegewezen">Niet Toegewezen</option>
+        </select>
+
+        <label for="geboortedatum">Geboortedatum:</label>
+        <input type="date" name="geboortedatum" id="geboortedatum" required>
+
+        <input type="submit" value="Toevoegen">
+    </form>
+	</div>
+</body>
+</html>
