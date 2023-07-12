@@ -2,28 +2,105 @@
 <html>
 <head>
     <title>Mensenbeheer</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 30px;
+        }
+
+        form {
+            width: 300px;
+            margin: 20px auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <h1>Mensen</h1>
-    <ul>
+    <h1>Administrator platform</h1>
+    <h2>Mensen</h2>
+    <table>
+        <tr>
+            <th>Voornaam</th>
+            <th>Achternaam</th>
+            <th>Locatie</th>
+            <th></th>
+        </tr>
         {% for persoon in mensen %}
-        <li>{{ persoon[0] }} {{ persoon[1] }}
-            <form action="/verwijderen" method="post" style="display: inline;">
-                <input type="hidden" name="voornaam" value="{{ persoon[0] }}">
-                <input type="hidden" name="achternaam" value="{{ persoon[1] }}">
-                <input type="submit" value="Verwijderen">
-            </form>
-        </li>
+        <tr>
+            <td>{{ persoon[0] }}</td>
+            <td>{{ persoon[1] }}</td>
+            <td>{{ persoon[2] }}</td>
+            <td>
+                <form action="/verwijderen" method="post" style="display: inline;">
+                    <input type="hidden" name="voornaam" value="{{ persoon[0] }}">
+                    <input type="hidden" name="achternaam" value="{{ persoon[1] }}">
+					<input type="hidden" name="locatie" value="{{ persoon[2] }}">
+                    <input type="submit" value="Verwijderen">
+                </form>
+            </td>
+        </tr>
         {% endfor %}
-    </ul>
+    </table>
 
     <h2>Persoon toevoegen</h2>
     <form action="/toevoegen" method="post">
         <label for="voornaam">Voornaam:</label>
-        <input type="text" name="voornaam" id="voornaam" required><br>
+        <input type="text" name="voornaam" id="voornaam" required>
 
         <label for="achternaam">Achternaam:</label>
-        <input type="text" name="achternaam" id="achternaam" required><br>
+        <input type="text" name="achternaam" id="achternaam" required>
+
+        <label for="locatie">Locatie:</label>
+        <select name="locatie" id="locatie" required>
+            <option value="Brugge">Brugge</option>
+            <option value="Oudenaarde">Oudenaarde</option>
+            <option value="Lokeren">Lokeren</option>
+            <option value="Erembodegem">Erembodegem</option>
+        </select>
 
         <input type="submit" value="Toevoegen">
     </form>

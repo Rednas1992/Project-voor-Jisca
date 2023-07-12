@@ -40,7 +40,7 @@ def haal_mensen_op():
     conn = sqlite3.connect('techmensenba.db')
     cursor = conn.cursor()
 
-    cursor.execute("SELECT voornaam, achternaam FROM mensen")
+    cursor.execute("SELECT voornaam, achternaam, locatie FROM mensen")
     resultaten = cursor.fetchall()
 
     conn.close()
@@ -48,21 +48,23 @@ def haal_mensen_op():
     return resultaten
 
 # Functie om een persoon aan de database toe te voegen
-def voeg_persoon_toe(voornaam, achternaam):
+def voeg_persoon_toe(voornaam, achternaam, locatie):
     conn = sqlite3.connect('techmensenba.db')
     cursor = conn.cursor()
 
-    cursor.execute("INSERT INTO mensen (voornaam, achternaam) VALUES (?, ?)", (voornaam, achternaam))
+    cursor.execute("INSERT INTO mensen (voornaam, achternaam, locatie) VALUES (?, ?, ?)", (voornaam, achternaam, locatie))
 
     conn.commit()
     conn.close()
 
 # Functie om een persoon uit de database te verwijderen
-def verwijder_persoon(voornaam, achternaam):
+def verwijder_persoon(voornaam, achternaam, locatie):
     conn = sqlite3.connect('techmensenba.db')
     cursor = conn.cursor()
+    
+    print(f"Te verwijderen persoon: {voornaam}, {achternaam}, {locatie}")
 
-    cursor.execute("DELETE FROM mensen WHERE voornaam=? AND achternaam=?", (voornaam, achternaam))
+    cursor.execute("DELETE FROM mensen WHERE voornaam=? AND achternaam=? AND locatie=?", (voornaam, achternaam, locatie))
 
     conn.commit()
     conn.close()
@@ -76,19 +78,23 @@ def techmensen(): ### hier maak ik wijzeging in het nieuwe script ###
 def toevoegen():
     voornaam = request.form['voornaam']
     achternaam = request.form['achternaam']
+    locatie = request.form['locatie']
+    
+    print(f"Ontvangen gegevens voor verwijderen: {voornaam}, {achternaam}, {locatie}")
 
-    voeg_persoon_toe(voornaam, achternaam)
+    voeg_persoon_toe(voornaam, achternaam, locatie)
 
-    return redirect('/')
+    return redirect('/techmensen')
 
 @app.route('/verwijderen', methods=['POST'])
 def verwijderen():
     voornaam = request.form['voornaam']
     achternaam = request.form['achternaam']
+    locatie = request.form['locatie']
 
-    verwijder_persoon(voornaam, achternaam)
+    verwijder_persoon(voornaam, achternaam, locatie)
 
-    return redirect('/')
+    return redirect('/techmensen')
 #####
 #####
 ##### nieuwe code einde ###
