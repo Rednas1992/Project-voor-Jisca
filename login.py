@@ -1,6 +1,7 @@
 from flask import Flask, redirect, url_for, render_template, request
 import sqlite3
 from datetime import datetime, date
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
