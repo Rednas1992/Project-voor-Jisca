@@ -88,8 +88,8 @@
         }
 		
 		.not-planning {
-            color: orange;
-        }
+    color: orange;
+  }
 		
     </style>
 	<script>
@@ -118,56 +118,106 @@
     </div>
 	
 	<div id="mensenSection">
-        <form action="/filteren_oudenaarde" method="post">
-            <label for="locatieFilter">Filter op locatie:</label>
-            <select name="locatieFilter" id="locatieFilter">
-                <option value="">Alle</option>
-                <option value="Brugge">Brugge</option>
-                <option value="Oudenaarde" selected>Oudenaarde</option>
-                <option value="Lokeren">Lokeren</option>
-                <option value="Erembodegem">Erembodegem</option>
-                <option value="Mechelen">Mechelen</option>
-                <option value="Niet Toegewezen">Niet Toegewezen</option>
-            </select>
-            <input type="submit" value="Filteren">
-        </form>
-        <br>
-        <form id="vertrekForm" action="/vertrek_doorgestuurd_oudenaarde" method="post">
-            <table>
-                <tr>
-                    <th>Voornaam</th>
-                    <th>Achternaam</th>
-                    <th>Locatie</th>
-                    <th>Geboortedatum</th>
-                    <th>Status</th>
-                    <th>Opmerkingen</th>
-                </tr>
-                {% for persoon in mensen %}
-                <tr>
-                    <td>{{ persoon[0] }}</td>
-                    <td>{{ persoon[1] }}</td>
-                    <td>{{ persoon[2] }}</td>
-                    <td>{{ persoon[3] }}</td>
-                    <td>
-                        {% if persoon[2] == "Oudenaarde" %}
-                            <select name="status_{{ loop.index0 }}" onchange="updateStatus(this)">
-                                <option value="" disabled selected>Selecteer status</option>
-                                <option value="Actief">Actief</option>
-                                <option value="Ziek">Ziek</option>
-                                <option value="Verlof">Verlof</option>
-                                <option value="Varia">Varia</option>
-                                <option value="Vrij">Vrij</option>
-                            </select>
-                        {% else %}
-                            <span class="not-planning">Niet van jouw planning</span>
-                        {% endif %}
-                    </td>
-                    <td><input type="text" name="opmerkingen_{{ loop.index0 }}" placeholder="Opmerkingen"></td>
-                </tr>
-                {% endfor %}
-            </table>
-            <input type="submit" value="Vertrek doorsturen/updaten" id="vertrekButton">
-        </form>
+    <form action="/filteren_oudenaarde" method="post">
+        <label for="locatieFilter">Filter op locatie:</label>
+        <select name="locatieFilter" id="locatieFilter">
+            <option value="">Alle</option>
+            <option value="Brugge">Brugge</option>
+            <option value="Oudenaarde" selected>Oudenaarde</option>
+            <option value="Lokeren">Lokeren</option>
+            <option value="Erembodegem">Erembodegem</option>
+            <option value="Mechelen">Mechelen</option>
+            <option value="Niet Toegewezen">Niet Toegewezen</option>
+        </select>
+        <input type="submit" value="Filteren">
+    </form>
+    <br>
+    <table>
+        <tr>
+            <th>Voornaam</th>
+            <th>Achternaam</th>
+            <th>Locatie</th>
+            <th>Geboortedatum</th>
+            <th>Status</th>
+            <th>Opmerkingen</th>
+        </tr>
+        {% for persoon in mensen %}
+        <tr>
+            <td>{{ persoon[0] }}</td>
+            <td>{{ persoon[1] }}</td>
+            <td>{{ persoon[2] }}</td>
+            <td>{{ persoon[3] }}</td>
+            <td>
+                {% if persoon[2] == "Oudenaarde" %}
+                    <select name="status_{{ loop.index0 }}" onchange="updateStatus(this)">
+                        <option value="" disabled selected>Selecteer status</option>
+                        <option value="Actief">Actief</option>
+                        <option value="Ziek">Ziek</option>
+                        <option value="Verlof">Verlof</option>
+                        <option value="Varia">Varia</option>
+                        <option value="Vrij">Vrij</option>
+                    </select>
+                {% else %}
+                    <span class="not-planning">Niet van jouw planning</span>
+                {% endif %}
+            </td>
+            <td><input type="text" name="opmerkingen_{{ loop.index0 }}" placeholder="Opmerkingen"></td>
+        </tr>
+        {% endfor %}
+    </table>
+	<form id="vertrekForm" action="/vertrek_doorgestuurd_oudenaarde" method="post">
+    <input type="submit" value="Vertrek doorsturen/updaten" id="vertrekButton">
+</form>
+	</div>
+
+    <div>
+        <h2 style="display: inline;">Persoon toevoegen</h2>
+        <div class="toggle-button" onclick="toggleSection('toevoegenSection')"></div>
+    </div>
+	<div id="toevoegenSection">
+    <form action="/toevoegen_oudenaarde" method="post">
+        <label for="voornaam">Voornaam:</label>
+        <input type="text" name="voornaam" id="voornaam" required>
+
+        <label for="achternaam">Achternaam:</label>
+        <input type="text" name="achternaam" id="achternaam" required>
+
+        <label for="locatie">Locatie:</label>
+        <select name="locatie" id="locatie" required>
+            <option value="Oudenaarde">Oudenaarde</option>
+            <option value="Niet Toegewezen">Niet Toegewezen</option>
+        </select>
+
+        <label for="geboortedatum">Geboortedatum:</label>
+        <input type="date" name="geboortedatum" id="geboortedatum" required>
+
+        <input type="submit" value="Toevoegen">
+    </form>
+	</div>
+	
+	<div>
+        <h2 style="display: inline;">Persoon van eigen planning verwijderen</h2>
+        <div class="toggle-button" onclick="toggleSection('verwijderensection')"></div>
+    </div>
+	<div id="verwijderensection">
+    <form action="/toevoegen_oudenaarde" method="post">
+        <label for="voornaam">Voornaam:</label>
+        <input type="text" name="voornaam" id="voornaam" required>
+
+        <label for="achternaam">Achternaam:</label>
+        <input type="text" name="achternaam" id="achternaam" required>
+
+        <label for="locatie">Locatie:</label>
+        <select name="locatie" id="locatie" required>
+            <option value="Oudenaarde">Oudenaarde</option>
+            <option value="Niet Toegewezen">Niet Toegewezen</option>
+        </select>
+
+        <label for="geboortedatum">Geboortedatum:</label>
+        <input type="date" name="geboortedatum" id="geboortedatum" required>
+
+        <input type="submit" value="Toevoegen">
+    </form>
 	</div>
 </body>
 </html>
