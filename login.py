@@ -146,11 +146,66 @@ def filteren_oudenaarde():
 
     return render_template('oudenaarde.html', mensen=gefilterde_mensen)
 
+@app.route('/opslaan_js_status_element', methods=['POST'])
+def opslaan_js_status_element():
+    data = request.json
+    js_status_element = data['js_status_element']
+
+    opslaan_js_elementen(js_status_element, [])
+
+    return 'OK'  # Terugsturen van een bevestiging dat de gegevens zijn opgeslagen
+
+@app.route('/opslaan_js_opmerkingen_element', methods=['POST'])
+def opslaan_js_opmerkingen_element():
+    data = request.json
+    js_opmerkingen_element = data['js_opmerkingen_element']
+
+    opslaan_js_elementen([], js_opmerkingen_element)
+
+    return 'OK'  # Terugsturen van een bevestiging dat de gegevens zijn opgeslagen
+
+
+def opslaan_js_elementen(js_status_element, js_opmerkingen_element):
+    conn = sqlite3.connect('techmensenba.db')
+    cursor = conn.cursor()
+
+    # Maak een tabel aan als deze nog niet bestaat
+    cursor.execute('''CREATE TABLE IF NOT EXISTS js_status_element
+                      (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      status TEXT)''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS js_opmerkingen_element
+                      (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      opmerkingen TEXT)''')
+
+    # Verwijder eventuele bestaande gegevens in de tabellen
+    cursor.execute("DELETE FROM js_status_element")
+    cursor.execute("DELETE FROM js_opmerkingen_element")
+
+    # Voeg de waarden van de JavaScript-variabelen toe aan de tabellen
+    for status in js_status_element:
+        cursor.execute("INSERT INTO js_status_element (status) VALUES (?)", (status,))
+
+    for opmerkingen in js_opmerkingen_element:
+        cursor.execute("INSERT INTO js_opmerkingen_element (opmerkingen) VALUES (?)", (opmerkingen,))
+
+    # Sla de wijzigingen op en sluit de databaseverbinding
+    conn.commit()
+    conn.close()
+
+
 @app.route('/vertrek_doorgestuurd_oudenaarde', methods=['POST'])
 def vertrek_doorgestuurd_oudenaarde():
     locatie_filter = "Oudenaarde"
     huidige_datum = date.today().strftime("%Y-%m-%d")
     oudenaarde_datum_tabel = "oudenaarde_" + huidige_datum.replace("-", "_")
+    
+    # Update de Python-variabelen met de waarden van de JavaScript-variabelen en filter lege velden
+    py_status_element = [status for status in request.form.getlist("js_status_element[]") if status != ""]
+    py_status_opmerkingen = [opmerkingen for opmerkingen in request.form.getlist("js_opmerkingen_element[]") if opmerkingen != ""]
+
+    print(py_status_element)
+    print(py_status_opmerkingen)
     
     # Filter de gegevens op locatie "Oudenaarde"
     mensen = haal_mensen_op()
@@ -172,6 +227,13 @@ def vertrek_doorgestuurd_oudenaarde():
             opmerkingen_key = request.form.get(f"opmerkingen_{i}")  # Unieke identificatie voor opmerkingen
             cursor.execute("UPDATE {} SET status=?, opmerkingen=? WHERE voornaam=? AND achternaam=? AND locatie=? AND geboortedatum=?".format(oudenaarde_datum_tabel),
                            (status_key, opmerkingen_key, voornaam, achternaam, locatie, geboortedatum))
+        
+        # Update de Python-variabelen met de waarden van de JavaScript-variabelen en filter lege velden
+        py_status_element = [status for status in request.form.getlist("js_status_element[]") if status != ""]
+        py_status_opmerkingen = [opmerkingen for opmerkingen in request.form.getlist("js_opmerkingen_element[]") if opmerkingen != ""]
+        
+        print(py_status_element)
+        print(py_status_opmerkingen)
     else:
         # Maak een nieuwe tabel aan
         cursor.execute("CREATE TABLE {} (voornaam TEXT, achternaam TEXT, locatie TEXT, geboortedatum TEXT, status TEXT, opmerkingen TEXT)".format(oudenaarde_datum_tabel))
