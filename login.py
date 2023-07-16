@@ -146,26 +146,18 @@ def filteren_oudenaarde():
 
     return render_template('oudenaarde.html', mensen=gefilterde_mensen)
 
+#### start status
+
 @app.route('/opslaan_js_status_element', methods=['POST'])
 def opslaan_js_status_element():
     data = request.json
     js_status_element = data['js_status_element']
 
-    opslaan_js_elementen(js_status_element, [])
+    opslaan_js_elementen_status(js_status_element)
 
     return 'OK'  # Terugsturen van een bevestiging dat de gegevens zijn opgeslagen
 
-@app.route('/opslaan_js_opmerkingen_element', methods=['POST'])
-def opslaan_js_opmerkingen_element():
-    data = request.json
-    js_opmerkingen_element = data['js_opmerkingen_element']
-
-    opslaan_js_elementen([], js_opmerkingen_element)
-
-    return 'OK'  # Terugsturen van een bevestiging dat de gegevens zijn opgeslagen
-
-
-def opslaan_js_elementen(js_status_element, js_opmerkingen_element):
+def opslaan_js_elementen_status(js_status_element):
     conn = sqlite3.connect('techmensenba.db')
     cursor = conn.cursor()
 
@@ -174,77 +166,170 @@ def opslaan_js_elementen(js_status_element, js_opmerkingen_element):
                       (id INTEGER PRIMARY KEY AUTOINCREMENT,
                       status TEXT)''')
 
-    cursor.execute('''CREATE TABLE IF NOT EXISTS js_opmerkingen_element
-                      (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      opmerkingen TEXT)''')
-
     # Verwijder eventuele bestaande gegevens in de tabellen
     cursor.execute("DELETE FROM js_status_element")
-    cursor.execute("DELETE FROM js_opmerkingen_element")
 
     # Voeg de waarden van de JavaScript-variabelen toe aan de tabellen
     for status in js_status_element:
         cursor.execute("INSERT INTO js_status_element (status) VALUES (?)", (status,))
 
+    # Sla de wijzigingen op en sluit de databaseverbinding
+    conn.commit()
+    conn.close()
+#### einde status
+    
+### start opmerkingen
+
+@app.route('/opslaan_js_opmerkingen_element', methods=['POST'])
+def opslaan_js_opmerkingen_element():
+    data = request.json
+    js_opmerkingen_element = data['js_opmerkingen_element']
+
+    opslaan_js_elementen_opmerkingen(js_opmerkingen_element)
+
+    return 'OK'  # Terugsturen van een bevestiging dat de gegevens zijn opgeslagen
+
+
+def opslaan_js_elementen_opmerkingen(js_opmerkingen_element):
+    conn = sqlite3.connect('techmensenba.db')
+    cursor = conn.cursor()
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS js_opmerkingen_element
+                      (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      opmerkingen TEXT)''')
+
+    # Verwijder eventuele bestaande gegevens in de tabellen
+    cursor.execute("DELETE FROM js_opmerkingen_element")
+
+    # Voeg de waarden van de JavaScript-variabelen toe aan de tabellen
     for opmerkingen in js_opmerkingen_element:
         cursor.execute("INSERT INTO js_opmerkingen_element (opmerkingen) VALUES (?)", (opmerkingen,))
 
     # Sla de wijzigingen op en sluit de databaseverbinding
     conn.commit()
     conn.close()
+    
+## einde opmerkingen
 
-
-@app.route('/vertrek_doorgestuurd_oudenaarde', methods=['POST'])
+@app.route('/vertrek_doorgestuurd_oudenaarde', methods=['POST']) #miliondollarfuckingkutcode
 def vertrek_doorgestuurd_oudenaarde():
     locatie_filter = "Oudenaarde"
     huidige_datum = date.today().strftime("%Y-%m-%d")
     oudenaarde_datum_tabel = "oudenaarde_" + huidige_datum.replace("-", "_")
-    
-    # Update de Python-variabelen met de waarden van de JavaScript-variabelen en filter lege velden
-    py_status_element = [status for status in request.form.getlist("js_status_element[]") if status != ""]
-    py_status_opmerkingen = [opmerkingen for opmerkingen in request.form.getlist("js_opmerkingen_element[]") if opmerkingen != ""]
 
-    print(py_status_element)
-    print(py_status_opmerkingen)
-    
     # Filter de gegevens op locatie "Oudenaarde"
     mensen = haal_mensen_op()
     gefilterde_mensen = [persoon + ("", "") for persoon in mensen if persoon[2] == locatie_filter]
-    
+
+    print(gefilterde_mensen)
+
     # Maak verbinding met de database
     conn = sqlite3.connect('techmensenba.db')
     cursor = conn.cursor()
+
+    # START status element word opgehaald 
+    # Controleer of de tabel 'js_status_element' al bestaat
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='js_status_element'")
+    tabel_bestaat = cursor.fetchone()
+
+    if tabel_bestaat:
+        # Verwijder eventuele lege velden in de tabel 'js_status_element'
+        cursor.execute("DELETE FROM js_status_element WHERE status = '' OR status IS NULL")
+
+        # Haal de status-data op uit de tabel 'js_status_element'
+        cursor.execute("SELECT status FROM js_status_element")
+        status_data = cursor.fetchall()
+        status_data = [row[0] for row in status_data]
+
+        # Print de statusgegevens
+        print(status_data)
+    else:
+        status_data = []  # Als de tabel 'js_status_element' niet bestaat, initialiseer een lege lijst
+
+    # EINDE status element opzoeken
+    
+    # START Opmerkingen opzoeken
+    # Controleer of de tabel 'js_opmerkingen_element' al bestaat
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='js_opmerkingen_element'")
+    tabel_bestaat = cursor.fetchone()
+
+    if tabel_bestaat:
+        # Verwijder eventuele lege velden in de tabel 'js_opmerkingen_element'
+        cursor.execute("DELETE FROM js_opmerkingen_element WHERE opmerkingen = '' OR opmerkingen IS NULL")
+
+        # Haal de opmerkingen-data op uit de tabel 'js_opmerkingen_element'
+        cursor.execute("SELECT opmerkingen FROM js_opmerkingen_element")
+        opmerkingen_data = cursor.fetchall()
+        opmerkingen_data = [row[0] for row in opmerkingen_data]
+
+        # Print de opmerkingen-gegevens
+        print(opmerkingen_data)
+    else:
+        opmerkingen_data = []  # Als de tabel 'js_opmerkingen_element' niet bestaat, initialiseer een lege lijst
+
+    # EINDE opmerkingen element opzoeken
 
     # Controleer of de tabel al bestaat
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (oudenaarde_datum_tabel,))
     tabel_bestaat = cursor.fetchone()
 
     if tabel_bestaat:
-        # Update de bestaande tabel
-        for i, persoon in enumerate(gefilterde_mensen):
-            voornaam, achternaam, locatie, geboortedatum, status, opmerkingen = persoon
-            status_key = request.form.get(f"status_{i}")  # Unieke identificatie voor status
-            opmerkingen_key = request.form.get(f"opmerkingen_{i}")  # Unieke identificatie voor opmerkingen
-            cursor.execute("UPDATE {} SET status=?, opmerkingen=? WHERE voornaam=? AND achternaam=? AND locatie=? AND geboortedatum=?".format(oudenaarde_datum_tabel),
-                           (status_key, opmerkingen_key, voornaam, achternaam, locatie, geboortedatum))
+        # Verwijder de bestaande tabel
+        cursor.execute("DROP TABLE IF EXISTS {}".format(oudenaarde_datum_tabel))
         
-        # Update de Python-variabelen met de waarden van de JavaScript-variabelen en filter lege velden
-        py_status_element = [status for status in request.form.getlist("js_status_element[]") if status != ""]
-        py_status_opmerkingen = [opmerkingen for opmerkingen in request.form.getlist("js_opmerkingen_element[]") if opmerkingen != ""]
-        
-        print(py_status_element)
-        print(py_status_opmerkingen)
-    else:
         # Maak een nieuwe tabel aan
         cursor.execute("CREATE TABLE {} (voornaam TEXT, achternaam TEXT, locatie TEXT, geboortedatum TEXT, status TEXT, opmerkingen TEXT)".format(oudenaarde_datum_tabel))
+
         # Voeg de gefilterde gegevens toe aan de nieuwe tabel
-        cursor.executemany("INSERT INTO {} VALUES (?, ?, ?, ?, ?, ?)".format(oudenaarde_datum_tabel), gefilterde_mensen)
+        status_index = 0  # Teller voor de index van status_data
+        opmerkingen_index = 0  # Teller voor de index van opmerkingen_data
+        for persoon in gefilterde_mensen:
+            voornaam, achternaam, locatie, geboortedatum, _, _ = persoon
+            if status_index < len(status_data):
+                status_key = status_data[status_index]  # Status verkregen uit status_data
+                status_index += 1
+            else:
+                status_key = ""  # Geen status beschikbaar voor de huidige persoon
+            
+            if opmerkingen_index < len(opmerkingen_data):
+                opmerkingen_key = opmerkingen_data[opmerkingen_index]  # Opmerkingen verkregen uit opmerkingen_data
+                opmerkingen_index += 1
+            else:
+                opmerkingen_key = ""  # Geen opmerkingen beschikbaar voor de huidige persoon
+            
+            cursor.execute("INSERT INTO {} VALUES (?, ?, ?, ?, ?, ?)".format(oudenaarde_datum_tabel),
+                           (voornaam, achternaam, locatie, geboortedatum, status_key, opmerkingen_key))
+    else:
+        # Maak een nieuwe tabel aan / omdat ze nog niet bestaat
+        cursor.execute("CREATE TABLE {} (voornaam TEXT, achternaam TEXT, locatie TEXT, geboortedatum TEXT, status TEXT, opmerkingen TEXT)".format(oudenaarde_datum_tabel))
+
+        # Voeg de gefilterde gegevens toe aan de nieuwe tabel
+        status_index = 0  # Teller voor de index van status_data
+        opmerkingen_index = 0  # Teller voor de index van opmerkingen_data
+        for persoon in gefilterde_mensen:
+            voornaam, achternaam, locatie, geboortedatum, _, _ = persoon
+            if status_index < len(status_data):
+                status_key = status_data[status_index]  # Status verkregen uit status_data
+                status_index += 1
+            else:
+                status_key = ""  # Geen status beschikbaar voor de huidige persoon
+            
+            if opmerkingen_index < len(opmerkingen_data):
+                opmerkingen_key = opmerkingen_data[opmerkingen_index]  # Opmerkingen verkregen uit opmerkingen_data
+                opmerkingen_index += 1
+            else:
+                opmerkingen_key = ""  # Geen opmerkingen beschikbaar voor de huidige persoon
+            
+            cursor.execute("INSERT INTO {} VALUES (?, ?, ?, ?, ?, ?)".format(oudenaarde_datum_tabel),
+                           (voornaam, achternaam, locatie, geboortedatum, status_key, opmerkingen_key))
 
     # Sla de wijzigingen op en sluit de databaseverbinding
     conn.commit()
     conn.close()
 
     return redirect('/oudenaarde')
+
+
 
 if __name__ == "__main__":
     app.run()
